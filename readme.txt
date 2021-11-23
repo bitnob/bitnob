@@ -19,15 +19,15 @@ BITNOB FOR WOOCOMMERCE
 This plugin equips online businesses using WordPress WooCommerce with the ability to accept and process bitcoin payments via on-chain or lightning seamlessly.
 
 Dedicated support.
-No chargebacks or fraud.
-No setup cost or recurring fees.
-Non custodial system: wallet to wallet, no intermediary.
-View transactions on your Bitnob dashboard 
-In addition, we offer bitcoin to local currency settlement too:
+- No chargebacks or fraud.
+- No setup cost or recurring fees.
+- Non custodial system: wallet to wallet, no intermediary.
+- View transactions on your Bitnob dashboard 
+- In addition, we offer bitcoin to local currency settlement too:
 
 Easily settle payments to your bank account in your local currency.
 Accept bitcoin payments without needing to understand or handle bitcoin.
-
+5. Your bitnon user dashboard
 
 SETTLEMENT OPTIONS
 We offer 2 easy options for more flexibility.
@@ -36,9 +36,9 @@ Bitcoin (Free): Direct bitcoin payments without any fee. From their wallet to yo
 Local currency (withdrawal fee): No volatility. Easily withdraw to your bank account. 
 
 SUPPORTED CURRENCIES
-• United States dollar (USD)
-• Nigerian Naira (NGN)
-• Ghanaian Cedis (GHS)
+- United States dollar (USD)
+- Nigerian Naira (NGN)
+- Ghanaian Cedis (GHS)
 
 ABOUT BITNOB
 At Bitnob, we have one single Mission, which is making it easy for every African and African business to connect with the bitcoin blockchain.
@@ -48,14 +48,14 @@ Install via the searchable Plugin Directory within your WordPress site’s plugi
 (Or: Upload bitnob-payments.zip to the /wp-content/plugins/ directory.)
 Activate the plugin through the ‘Plugins’ menu in WordPress.
 
-1. Go to [https://app.bitnob.co](https://app.bitnob.co) to sign up a free account
-2. Generate and copy your secret key.
-3. Go to Woo-commerce > Settings > Payment > enable Enable Bitnob Gateway
-4. Paste you Secret key
+- Go to [https://app.bitnob.co](https://app.bitnob.co) to sign up a free account
+- Generate and copy your secret key.
+- Go to Woo-commerce > Settings > Payment > enable Enable Bitnob Gateway
+- Paste you Secret key
 
 3rd-party user dashboard used;
 This user dashboard is owned by Bitnob, it allows you to setup your account and BTC wallet to receive payments
-* [app.bitnob.co](https://app.bitnob.co)
+[app.bitnob.co](https://app.bitnob.co)
 Read [Privacy Policy](https://bitnob.com/privacypolicy/) and [Terms of Service](https://bitnob.com/terms-of-services/)
 
 
@@ -74,8 +74,10 @@ We support all BTC or Lightning wallets allowing public keys
 Yes we can our support team is always here to help. Contact us by e-mail at support@bitnob.com
 
 == Screenshots ==
-1. Bitcoin payment gateway by Bitnob
-
+2. Eanble the plugin from WooCommerce Payments settings
+3. Add your Bitnob Private Key from WooCommerce Payments settings
+4. Generate your Private Key and copy it
+5. Your user dashboard
 == Changelog ==
 
 = 1.0.0 =
