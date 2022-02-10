@@ -12,6 +12,7 @@
  * WC tested up to: 5.8.2
  * WC requires at least: 3.2.0
  */
+
 add_filter('woocommerce_payment_gateways', 'bitnob_add_gateway_class');
 
 function bitnob_add_gateway_class($gateways)
@@ -33,8 +34,8 @@ function bitnob_add_gateway()
             $this->id = 'bitnob'; // payment gateway plugin ID
 
             $this->has_fields = true;
-            $this->method_title = __('Bitcoin Payment Gateway - powered by Bitnob');
-            $this->method_description = __('Pay with bitcoin, powered by Bitnob');
+            $this->method_title = __('Bitnob');
+            $this->method_description = __('Bitcoin Payments, Powered by Bitnob');
             $this->supports = array(
                 'products'
             );
@@ -74,14 +75,14 @@ function bitnob_add_gateway()
                     'title'       => __('Title'),
                     'type'        => 'text',
                     'description' => __('This controls the title which the user sees during checkout.'),
-                    'default'     => 'Pay with Bitcoin, powered by Bitnob ',
+                    'default'     => 'Bitcoin <br><img src="" />',
                     'desc_tip'    => true,
                 ),
                 'description' => array(
                     'title'       => __('Description'),
                     'type'        => 'textarea',
                     'description' => __('This controls the description which the user sees during checkout.'),
-                    'default'     => __('Pay with bitcoin, powered by Bitnob'),
+                    'default'     => __('Bitcoin Payments. Powered by Bitnob. '),
                 ),
                 'apikey' => array(
                     'title'       => __('API Key'),
@@ -137,10 +138,12 @@ function bitnob_add_gateway()
                     $amount = $satoshi['data'];
                     $data = array(
                         'invoiceid'         => $order_id,
+                        'customerEmail' => $order->get_billing_email(),
                         //                         'callbackUrl'      => site_url().'/wc-api/bitnob?invoiceid='.$order_id,
                         'callbackUrl'      => site_url() . '?wc-api=WC_Gateway_Bitnob&invoiceid=' . $order_id,
                         'successUrl'       => $redirect_url,
-                        'description'      => $this->description,
+                        //'description'      => $this->description,
+                        'description' => 'Bitcoin Payment for Order No. ('.$order_id.') . Powered by Bitnob',
                         'satoshis' => round(($amount) * (pow(10, 8)), 6)
                     );
                     $response = $this->call_curl($url, json_encode($data), $apikey);
@@ -162,7 +165,7 @@ function bitnob_add_gateway()
             if (isset($error)) {
                 echo '<h2 style="color:red;">' . $error . '</h2>';
             }
-            echo '</form>';
+            echo '</form><style></style>';
         }
 
         public function webhookname()
@@ -189,20 +192,20 @@ function bitnob_add_gateway()
                     if ($objdata->data->status == 'success') {
                         $order = wc_get_order($orderid);
                         $order->payment_complete();
-                        $order->add_order_note(sanitize_text_field('Bitcoin payment successful') . ("<br>") . ('ID') . (':') . ($id . ("<br>") . ('Payment Ref:') . ($reference) . ("<br>") . ('InvoiceId:') . ($invoiceId)));
+                        $order->add_order_note(sanitize_text_field('BitCoin payment successful') . ("<br>") . ('ID') . (':') . ($id . ("<br>") . ('Payment Ref:') . ($reference) . ("<br>") . ('InvoiceId:') . ($invoiceId)));
                         $order->reduce_order_stock();
                         update_option('webhook_debug', $data);
                     } else {
                         $order = wc_get_order($orderid);
                         $order->update_status('pending');
-                        $order->add_order_note(sanitize_text_field('Bitcoin payment failed') . ("<br>") . ('ID') . (':') . ($id . ("<br>") . ('Payment Type :') . ("<br>") . ('Payment Ref:') . ($reference) . ("<br>") . ('InvoiceId:') . ($invoiceId)));
+                        $order->add_order_note(sanitize_text_field('BitCoin payment failed') . ("<br>") . ('ID') . (':') . ($id . ("<br>") . ('Payment Type :') . ("<br>") . ('Payment Ref:') . ($reference) . ("<br>") . ('InvoiceId:') . ($invoiceId)));
                         update_option('webhook_debug', $data);
                     }
                 }
             } else {
                 $order = wc_get_order($orderid);
                 $order->update_status('pending');
-                $order->add_order_note(sanitize_text_field('Bitcoin payment failed') . ("<br>") . ('ID') . (':') . ($id . ("<br>") . ('Payment Type :') . ("<br>") . ('Payment Ref:') . ($reference) . ("<br>") . ('InvoiceId:') . ($invoiceId)));
+                $order->add_order_note(sanitize_text_field('BitCoin payment failed') . ("<br>") . ('ID') . (':') . ($id . ("<br>") . ('Payment Type :') . ("<br>") . ('Payment Ref:') . ($reference) . ("<br>") . ('InvoiceId:') . ($invoiceId)));
                 update_option('webhook_debug', $_GET);
             }
             $order->add_order_note("Response: " . $data);
@@ -285,3 +288,31 @@ function bitnob_add_gateway()
         }
     }
 }
+function bitnob_plugin_css(){
+	?>
+	<style>
+		.payment_method_bitnob img{
+			display: block !important;
+			float: none !important;
+			max-height: 100%!important;
+			max-width: 100% !important;
+			object-fit: cover;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			padding: 10px;
+			margin-top: 10px;
+			width: 309px;
+			height:auto!important;
+		}
+	</style>
+	<?php
+}
+function bitnob_payment_gateway_icon($gateways)
+{
+    if (isset($gateways['bitnob'])) {
+        $gateways['bitnob']->icon =  plugins_url('img/logo.png', __FILE__);
+    }
+    return $gateways;
+}
+add_filter('woocommerce_available_payment_gateways', 'bitnob_payment_gateway_icon', 10, 2);
+add_action( 'template_redirect', 'bitnob_plugin_css' );
