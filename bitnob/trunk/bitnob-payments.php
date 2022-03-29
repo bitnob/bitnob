@@ -2,7 +2,7 @@
 /*
 * Plugin Name: Bitnob - Accept Bitcoin Payments (On-chain & Lightning)
  * Description: Accept bitcoin payments with Bitnob
- * Version: 1.0.0
+ * Version: 1.0.2
  * Author: Bitnob Technologies
  * Author URI: https://bitnob.com
  * License: GNU General Public License v3.0
@@ -149,7 +149,7 @@ function bitnob_add_gateway()
                     $response = $this->call_curl($url, json_encode($data), $apikey);
                     $response_array = json_decode($response, true);
                     if ($response_array['status'] == 1) {
-                        header('location: https://checkout.bitnob.co/app/' . $response_array['data']['id'] . '/');
+                        header('location: https://checkout.bitnob.co/' . $response_array['data']['id'] . '/');
                         exit();
                     } else {
                         $error = $response_array['message'];

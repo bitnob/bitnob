@@ -82,3 +82,11 @@ Yes we can our support team is always here to help. Contact us by e-mail at supp
 
 = 1.0.0 =
 This is our initial release.
+
+= 1.0.1 =
+add support for multiple currency
+add order number to checkout description
+add checkout logo
+
+= 1.0.2 =
+bug fixes
