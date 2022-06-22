@@ -2,7 +2,7 @@
 Contributors: Bitnob Technologies
 Tags: bitcoin, bitnob, lightning, payments, shopping
 Requires at least: 3.2.0
-Tested up to: 5.8.2
+Tested up to: 6.0
 Requires PHP: 7.0
 Stable tag: trunk
 License: GNU General Public License v3.0
@@ -15,10 +15,10 @@ With an easy setup of our plugin, you can get up and running with our simple-to-
 With minimal or no learning curve,  you can enjoy the benefits bitcoin payments and lightning bring to you and your customers.
 
 == Description ==
-BITNOB FOR WOOCOMMERCE
+## Bitnob for Woocommerce
 This plugin equips online businesses using WordPress WooCommerce with the ability to accept and process bitcoin payments via on-chain or lightning seamlessly.
 
-Dedicated support.
+## Dedicated support.
 - No chargebacks or fraud.
 - No setup cost or recurring fees.
 - Non custodial system: wallet to wallet, no intermediary.
@@ -29,18 +29,18 @@ Easily settle payments to your bank account in your local currency.
 Accept bitcoin payments without needing to understand or handle bitcoin.
 5. Your bitnon user dashboard
 
-SETTLEMENT OPTIONS
+## Settlement Options
 We offer 2 easy options for more flexibility.
 
-Bitcoin (Free): Direct bitcoin payments without any fee. From their wallet to yours, total privacy, without going through Bitnob.
+*Bitcoin (Free):* Direct bitcoin payments without any fee. From their wallet to yours, total privacy, without going through Bitnob.
 Local currency (withdrawal fee): No volatility. Easily withdraw to your bank account. 
 
-SUPPORTED CURRENCIES
+## Supported Currencies
 - United States dollar (USD)
 - Nigerian Naira (NGN)
 - Ghanaian Cedis (GHS)
 
-ABOUT BITNOB
+## About Bitnob
 At Bitnob, we have one single Mission, which is making it easy for every African and African business to connect with the bitcoin blockchain.
 
 == Installation ==
@@ -53,7 +53,7 @@ Activate the plugin through the ‘Plugins’ menu in WordPress.
 - Go to Woo-commerce > Settings > Payment > enable Enable Bitnob Gateway
 - Paste you Secret key
 
-3rd-party user dashboard used;
+## 3rd-party user dashboard used;
 This user dashboard is owned by Bitnob, it allows you to setup your account and BTC wallet to receive payments
 [app.bitnob.co](https://app.bitnob.co)
 Read [Privacy Policy](https://bitnob.com/privacypolicy/) and [Terms of Service](https://bitnob.com/terms-of-services/)
@@ -90,3 +90,6 @@ add checkout logo
 
 = 1.0.2 =
 bug fixes
+
+= 1.1.0 =
+update checkout process

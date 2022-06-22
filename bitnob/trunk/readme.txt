@@ -2,7 +2,7 @@
 Contributors: Bitnob Technologies
 Tags: bitcoin, bitnob, lightning, payments, shopping
 Requires at least: 3.2.0
-Tested up to: 5.8.2
+Tested up to: 6.0
 Requires PHP: 7.0
 Stable tag: trunk
 License: GNU General Public License v3.0
@@ -90,3 +90,6 @@ add checkout logo
 
 = 1.0.2 =
 bug fixes
+
+= 1.1.0 =
+update checkout process

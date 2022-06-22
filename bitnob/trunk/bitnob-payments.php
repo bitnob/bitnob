@@ -1,15 +1,14 @@
 <?php
 /*
 * Plugin Name: Bitnob - Accept Bitcoin Payments (On-chain & Lightning)
- * Description: Accept bitcoin payments with Bitnob
- * Version: 1.0.2
+* Version: 1.1.0
  * Author: Bitnob Technologies
  * Author URI: https://bitnob.com
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: bitcoin-lightning-payments-by-bitnob
  * Domain Path: /languages
- * WC tested up to: 5.8.2
+ * WC tested up to: 6.0
  * WC requires at least: 3.2.0
  */
 
@@ -20,7 +19,6 @@ function bitnob_add_gateway_class($gateways)
     $gateways[] = 'WC_Gateway_BitNob';
     return $gateways;
 }
-
 add_action('plugins_loaded', 'bitnob_add_gateway');
 function bitnob_add_gateway()
 {
@@ -42,61 +40,30 @@ function bitnob_add_gateway()
 
             // Method with all the options fields
             $this->init_form_fields();
+            $this->admin_email = get_option('admin_email');
             $this->title = $this->get_option('title');
             $this->description = $this->get_option('description');
             $this->enabled = $this->get_option('enabled');
-            //$this->testmode = $this->get_option( 'testmode' );
-            //$this->testapikey = $this->get_option( 'testapikey' );
+            $this->testmode = $this->get_option( 'testmode' );
             $this->apikey = $this->get_option('apikey');
-
-            //$this->successUrl = $this->get_option('successUrl');
             $this->success_page_id = $this->settings['success_page_id'];
 
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-            //add_action( 'woocommerce_api_bitnob', array( $this, 'webhookname' ) );
             add_action('woocommerce_api_wc_gateway_bitnob', array($this, 'webhookname'));
-
+            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
             add_action('woocommerce_receipt_bitnob', array($this, 'bitnob_checkout_receipt_page'));
-            //add_action( 'woocommerce_thankyou_bitnob', array( $this, 'bitnob_thank_you_page' ) );
+
+            add_action('wp_head', array($this, 'woocommerce_enqueue_scripts'));
         }
-
-        public function init_form_fields()
+        public function woocommerce_enqueue_scripts()
         {
+            if($this->enabled=='yes'){
+                wp_enqueue_style( "bitnob-css", plugins_url('/assets/css/bitnob.css', __FILE__));
 
-            $this->form_fields = array(
-                'enabled' => array(
-                    'title'       => __('Enable/Disable'),
-                    'label'       => __('Enable Bitnob Gateway'),
-                    'type'        => 'checkbox',
-                    'description' => '',
-                    'default'     => 'no'
-                ),
-                'title' => array(
-                    'title'       => __('Title'),
-                    'type'        => 'text',
-                    'description' => __('This controls the title which the user sees during checkout.'),
-                    'default'     => 'Bitcoin <br><img src="" />',
-                    'desc_tip'    => true,
-                ),
-                'description' => array(
-                    'title'       => __('Description'),
-                    'type'        => 'textarea',
-                    'description' => __('This controls the description which the user sees during checkout.'),
-                    'default'     => __('Bitcoin Payments. Powered by Bitnob. '),
-                ),
-                'apikey' => array(
-                    'title'       => __('API Key'),
-                    'type'        => 'text',
-                ),
-                'success_page_id' => array(
-                    'title'         => __('Return to Success Page'),
-                    'type'             => 'select',
-                    'options'         => $this->bitnob_get_pages('Select Page'),
-                    'description'     => __('URL of success page', 'kdc'),
-                    'desc_tip'         => true
-                ),
+                wp_enqueue_script( "inline", plugins_url('/assets/js/inline.js', __FILE__));
+                wp_enqueue_script( "bitnob", plugins_url('/assets/js/bitnob-js.js', __FILE__));
 
-            );
+                
+            }
         }
         public function process_payment($order_id)
         {
@@ -110,7 +77,6 @@ function bitnob_add_gateway()
             //Success URL 
 
         }
-
         public function bitnob_checkout_receipt_page($order_id)
         {
             global $woocommerce;
@@ -124,68 +90,58 @@ function bitnob_add_gateway()
             } else {
                 $redirect_url = get_permalink($this->success_page_id);
             }
-            $apikey = $this->testmode == 'on' ? $this->testapikey : $this->apikey;
-            $urlconv = "https://api.bitnob.co/api/v1/wallets/convert-currency/";
-            if (isset($_POST['bitnob']) && isset($_POST['submit']) && $_POST['bitnob'] == 'bitnob') {
-                $currency = $order->currency;
-                //$currency = 'USD';
-                $amount = $order->total;
-                $currencyconv = $this->call_curl($urlconv, json_encode(["conversion" => strtoupper($currency) . "_BTC", "amount" => $amount]), $apikey);
-                //echo $currencyconv;
-                $satoshi = json_decode($currencyconv, true);
-                if ($satoshi['status'] == 1) {
-                    $url = "https://api.bitnob.co/api/v1/checkout/";
-                    $amount = $satoshi['data'];
-                    $data = array(
-                        'invoiceid'         => $order_id,
-                        'customerEmail' => $order->get_billing_email(),
-                        //                         'callbackUrl'      => site_url().'/wc-api/bitnob?invoiceid='.$order_id,
-                        'callbackUrl'      => site_url() . '?wc-api=WC_Gateway_Bitnob&invoiceid=' . $order_id,
-                        'successUrl'       => $redirect_url,
-                        //'description'      => $this->description,
-                        'description' => 'Bitcoin Payment for Order No. ('.$order_id.') . Powered by Bitnob',
-                        'satoshis' => round(($amount) * (pow(10, 8)), 6)
-                    );
-                    $response = $this->call_curl($url, json_encode($data), $apikey);
-                    $response_array = json_decode($response, true);
-                    if ($response_array['status'] == 1) {
-                        header('location: https://checkout.bitnob.co/' . $response_array['data']['id'] . '/');
-                        exit();
-                    } else {
-                        $error = $response_array['message'];
-                    }
-                } else {
-                    $error = implode(" ", $satoshi['message']);
-                }
-                //exit;
-            }
-            echo '<form method="post" action="">';
-            echo '<input type="hidden" value="bitnob" name="bitnob">';
-            echo '<input type="submit" name="submit" value="Pay Now">';
-            if (isset($error)) {
-                echo '<h2 style="color:red;">' . $error . '</h2>';
-            }
-            echo '</form><style></style>';
-        }
+            $publicKey = $this->apikey;
+            $amount = $order->total;
+            $callbackUrl = site_url() . '?wc-api=WC_Gateway_Bitnob&invoiceid=' . $order_id;
+            $email = $order->get_billing_email();
+            
+            $currency = $order->currency;
+            
+            $environment = $this->testmode === 'yes' ? "sandbox" : "production";
+            echo '<form method="post" action="" onsubmit="getFormData(event)">';
+                echo '<input type="hidden" value="bitnob" name="bitnob">';
+                echo '<input type="hidden" value="'.$publicKey.'" id="publicKey">';
+                echo '<input type="hidden" value="'.$amount.'" id="amount">';
+                echo '<input type="hidden" value="'.$email.'" id="email">';
+                echo '<input type="hidden" value="'.$currency.'" id="currency">';
+                echo '<input type="hidden" value="'.$callbackUrl.'" id="callbackUrl">';
+                echo '<input type="hidden" value="'.$successUrl.'" id="successUrl">';
+                echo '<input type="hidden" value="'.$this->admin_email.'" id="admin_email">';
+                echo '<input type="hidden" value="Bitcoin Payment for Order No. ('.$order_id.') . Powered by Bitnob" id="description">';
+                echo '<input type="hidden" value="'.$environment.'" id="environment">';
+                //echo '<input type="submit" name="submit" value="Pay Now">';
+            
+            echo '</form>';
 
+        }
         public function webhookname()
         {
             $data = file_get_contents('php://input');
+            //$data = '{"event":"checkout.received.paid","data":{"id":"b2d94135-9ad6-47d1-bb7f-39b421d5e2ae","status":"paid","satAmount":"1691","reference":"7a049e28c253","successUrl":"https://test.nobstar.xyz/whmcs/viewinvoice.php?id=10","callbackUrl":"https://test.nobstar.xyz/whmcs/modules/gateways/callback/bitnob.php","description":"Company Name - Invoice #10","satAmountPaid":"1691","transactions":[{"id":"925cba96-32e9-4fb8-9a6a-262c9d33da95","status":"success","amount":"1","channel":"lightning","reference":"ccbfd8092ff1","btcAmount":"0.00001691","satAmount":"1691","spotPrice":"58939.15","companyId":"23007732-b8b7-49a7-8694-dbc9ffc67410","description":"Company Name - Invoice #10","invoiceId":"abffc3edf688326c810874643e4513888277f7c557483050aa10b1d9da94a4b6","paymentRequest":"lnbc16910n1pshnrkspp540lu8m0k3qexeqggw3jru3gn3zp80a792ayrq592zzcank555jmqdp2gdhk6urpdeujqnnpd4jjqtfqf9h8vmmfvdjjqge3xqcqzpgxqr23sfppqa8gasf0gm7xf57xxzg6am99gpefvm378sp5qklpgec8u8tmjuwsgalqhq2x5zu5zmyy92nuc6svq3kxfye7nejs9qyyssqqtlexdrtudyhd6qr5nd2pj68hnkfmxnm0r2u0dfzr06uy63u7ge36h32qu3tvxe82xvlw58t4djgsqcngv7rxja5rrrlgc48a9yu6aqp03r276"}]}}';
             $response = json_decode($data);
+
+            
             $id = $response->data->id;
             $reference = $response->data->reference;
             $invoiceId = $response->data->invoiceId;
             $orderid = $_GET['invoiceid'];
             if ($response->event == 'checkout.received.paid') {
                 $response_id = $response->data->id;
-                $url = "https://api.bitnob.co/api/v1/transactions/" . $response->data->transactions[0]->id;
+                if($this->testmode=="yes"){
+                    $url = "https://sandboxapi.bitnob.co/api/v1/transactions/" . $response->data->transactions[0]->id;
+                }
+                else{
+                    $url = "https://api.bitnob.co/api/v1/transactions/" . $response->data->transactions[0]->id; 
+                }
                 $apikey = $this->get_option('apikey');
-                $resp = $this->sendDataCallback_curl($url, $apikey);
+                
+                $resp = $this->sendDataCallback($url, $apikey); 
+                
                 $objdata = json_decode($resp);
-
-                //print_r($objdata); 
+                
                 if ($objdata->status != true) {
-                } else {
+                }
+                else {
                     $id = $objdata->data->id;
                     $reference = $objdata->data->reference;
                     $invoiceId = $objdata->data->invoiceId;
@@ -202,7 +158,9 @@ function bitnob_add_gateway()
                         update_option('webhook_debug', $data);
                     }
                 }
-            } else {
+
+            }
+            else {
                 $order = wc_get_order($orderid);
                 $order->update_status('pending');
                 $order->add_order_note(sanitize_text_field('BitCoin payment failed') . ("<br>") . ('ID') . (':') . ($id . ("<br>") . ('Payment Type :') . ("<br>") . ('Payment Ref:') . ($reference) . ("<br>") . ('InvoiceId:') . ($invoiceId)));
@@ -211,60 +169,70 @@ function bitnob_add_gateway()
             $order->add_order_note("Response: " . $data);
             //exit;
         }
-        public function sendDataCallback_curl($url, $apikey)
-        {
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "GET",
-                // CURLOPT_POSTFIELDS => $data,
-                CURLOPT_HTTPHEADER => array(
-                    "accept: application/json'",
-                    "authorization: Bearer " . $apikey,
-                    "content-type: application/json",
-                ),
-            ));
-            $response = curl_exec($curl);
-            $err = curl_error($curl);
-            curl_close($curl);
-            if ($err) {
-                return "cURL Error #:" . $err;
-            } else {
-                return  $response;
+        public function sendDataCallback($url, $apikey)
+        { 
+            $request = wp_remote_get( 
+                $url, 
+                [
+                    'headers' => [
+                        'authorization' => 'Bearer ' . $apikey,
+                        "accept" => "application/json",
+                        "content-type" => "application/json"
+                    ],
+                ]
+            );
+            
+            if ( ! is_wp_error( $request ) ) {
+                $body = wp_remote_retrieve_body( $request );
+                return $body;
             }
         }
-        public function call_curl($url, $data, $apikey)
+        public function init_form_fields()
         {
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "POST",
-                CURLOPT_POSTFIELDS => $data,
-                CURLOPT_HTTPHEADER => array(
-                    "accept: application/json'",
-                    "authorization: Bearer " . $apikey,
-                    "content-type: application/json",
+
+            $this->form_fields = array(
+                'enabled' => array(
+                    'title'       => __('Enable/Disable'),
+                    'label'       => __('Enable Bitnob Gateway'),
+                    'type'        => 'checkbox',
+                    'description' => '',
+                    'default'     => 'no'
                 ),
-            ));
-            $response = curl_exec($curl);
-            $err = curl_error($curl);
-            curl_close($curl);
-            if ($err) {
-                return "cURL Error #:" . $err;
-            } else {
-                return  $response;
-            }
+                'title' => array(
+                    'title'       => __('Title'),
+                    'type'        => 'text',
+                    'description' => __('This controls the title which the user sees during checkout.'),
+                    'default'     => 'Bitcoin',
+                    'desc_tip'    => true,
+                ),
+                'description' => array(
+                    'title'       => __('Description'),
+                    'type'        => 'textarea',
+                    'description' => __('This controls the description which the user sees during checkout.'),
+                    'default'     => __('Bitcoin Payments. Powered by Bitnob. '),
+                ),
+                'apikey' => array(
+                    'title'       => __('API Key'),
+                    'type'        => 'text',
+                ),
+                'testmode' => array(
+                    'title'       => __('Sandbox/Production'),
+                    'label'       => __('Sandbox Environment'),
+                    'type'        => 'checkbox',
+                    'description' => '',
+                    'default'     => 'yes'
+                ),
+                'success_page_id' => array(
+                    'title'         => __('Return to Success Page'),
+                    'type'             => 'select',
+                    'options'         => $this->bitnob_get_pages('Select Page'),
+                    'description'     => __('URL of success page', 'kdc'),
+                    'desc_tip'         => true
+                ),
+
+            );
         }
+
         public function bitnob_get_pages()
         {
             $wp_pages = get_pages('sort_column=menu_order');
@@ -286,33 +254,21 @@ function bitnob_add_gateway()
             }
             return $page_list;
         }
+
     }
 }
-function bitnob_plugin_css(){
-	?>
-	<style>
-		.payment_method_bitnob img{
-			display: block !important;
-			float: none !important;
-			max-height: 100%!important;
-			max-width: 100% !important;
-			object-fit: cover;
-			border: 1px solid #ccc;
-			border-radius: 5px;
-			padding: 10px;
-			margin-top: 10px;
-			width: 309px;
-			height:auto!important;
-		}
-	</style>
-	<?php
+
+add_filter( 'woocommerce_gateway_icon', 'bitnob_payment_gateway_icon', 10, 2 );
+function bitnob_payment_gateway_icon( $icon, $gateway_id ){
+
+    
+
+    // Setting (or not) a custom icon to the payment IDs
+    
+    if($gateway_id == 'bitnob')
+        $icon = '<img src="' . plugins_url('assets/img/logo.png', __FILE__) . '"  class="bitnob_icon"/>';
+    
+
+    return $icon;
 }
-function bitnob_payment_gateway_icon($gateways)
-{
-    if (isset($gateways['bitnob'])) {
-        $gateways['bitnob']->icon =  plugins_url('img/logo.png', __FILE__);
-    }
-    return $gateways;
-}
-add_filter('woocommerce_available_payment_gateways', 'bitnob_payment_gateway_icon', 10, 2);
-add_action( 'template_redirect', 'bitnob_plugin_css' );
+?>
