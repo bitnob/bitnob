@@ -4,13 +4,13 @@
 
 * Plugin Name: Bitnob - Accept Bitcoin Payments (On-chain & Lightning)
 
- * Description: Accept crypto currency with bitnob.
+ * Description: Accept bitcoin with Bitnob.
 
- * Version: 1.1
+ * Version: 1.2
 
- * Author: WooCommerce
+ * Author: Bitnob
 
- * Author URI: https://610weblab.com
+ * Author URI: https://bitnob.com
 
  * License: GNU General Public License v3.0
 
@@ -20,7 +20,7 @@
 
  * Domain Path: /languages
 
- * WC tested up to: 6.0
+ * WC tested up to: 6.1.1
 
  * WC requires at least: 3.2.0
 
