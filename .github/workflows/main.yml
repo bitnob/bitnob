@@ -2,7 +2,7 @@ name: Deploy to WordPress.org
 on:
   push:
     branches:
-    - main
+    - production
 jobs:
   tag:
     name: Build release and deploy
@@ -15,4 +15,3 @@ jobs:
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         SLUG: bitnob
-        BUILD_DIR: ./bitnob/
