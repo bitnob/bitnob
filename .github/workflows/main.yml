@@ -1,18 +1,32 @@
-name: Deploy to WordPress.org
+name: Deploy WordPress Plugin to SVN
+
 on:
   push:
     branches:
-    - main
+      - main
+
+env:
+  SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+  SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+
 jobs:
-  tag:
-    name: Build release and deploy
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@master
-    - name: WordPress Plugin Deploy
-      uses: 10up/action-wordpress-plugin-deploy@stable
-      env:
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SLUG: bitnob
-        BUILD_DIR: ./bitnob/
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup SVN
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y subversion
+
+    - name: Deploy to SVN
+      run: |
+        svn co --username $SVN_USERNAME --password $SVN_PASSWORD https://plugins.svn.wordpress.org/bitnob bitnob
+        cd bitnob
+        rm -rf trunk
+        cp -r ../bitnob trunk
+        svn add trunk
+        svn ci --username $SVN_USERNAME --password $SVN_PASSWORD -m "Deploy to SVN"
