@@ -24,9 +24,9 @@ jobs:
 
     - name: Deploy to SVN
       run: |
-        svn co --username $SVN_USERNAME --password $SVN_PASSWORD https://plugins.svn.wordpress.org/bitnob bitnob
-        cd bitnob
-        rm -rf trunk
-        cp -r ../bitnob trunk
-        svn add trunk
-        svn ci --username $SVN_USERNAME --password $SVN_PASSWORD -m "Deploy to SVN"
+        svn co https://plugins.svn.wordpress.org/bitnob
+        svn add bitnob/*
+        svn ci -m "add first verison of plugin" --username $SVN_USERNAME --password $SVN_PASSWORD
+        svn add assets/*
+        svn add trunk/readme.txt
+        svn update trunk/readme.txt
