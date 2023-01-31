@@ -5,14 +5,14 @@ on:
     - main
 jobs:
   tag:
-    name: New tag
+    name: Build release and deploy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: WordPress Plugin Deploy
-      uses: nk-o/action-wordpress-plugin-deploy@master
-      env:
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SOURCE_DIR: bitnob/
-        SLUG: bitnob # optional, remove if GitHub repo name matches SVN slug, including capitalization
+    - name: Deploy to WordPress.org
+      uses: sultann/action-plugin-deploy@master
+      with:
+        svn_username: ${{ secrets.SVN_USERNAME }}
+        svn_password: ${{ secrets.SVN_PASSWORD }}
+        svn_slug: 'bitnob' # Remove this if GitHub repo name matches SVN slug
+        dry_run: true
